@@ -27,7 +27,6 @@ router.get('/', async (req,res)=>{
 router.post('/',upload, [
     body('name', "Name should be of min 5 characters!!" ).isLength({min: 5}),
     body('description', "Description shpuld be of min 5 characters").isLength({min: 5}),
-    body('count').isNumeric(),
     body('price').isNumeric()
 ], async (req, res) => {
     console.log(req.body)
@@ -50,8 +49,8 @@ router.post('/',upload, [
             name: req.body.name,
             description: req.body.description,
             image: req.file.filename,
-            count: req.count,
-            price: req.price,
+            count: req.body.count,
+            price: req.body.price,
             user: req.user
         }
         let product = await Product.create(obj);

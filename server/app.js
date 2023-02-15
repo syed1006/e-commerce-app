@@ -12,7 +12,7 @@ app.use(cors());
 app.use('/uploads', express.static('uploads'))
 //for parsing multipart form data
 // app.use(upload.array()); 
-app.use(express.static('public'));
+app.use(express.static('uploads'));
 
 const productRoutes = require('./routes/product');
 const userRoutes = require('./routes/user');
