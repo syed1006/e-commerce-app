@@ -14,7 +14,12 @@ app.use('/uploads', express.static('uploads'))
 // app.use(upload.array()); 
 app.use(express.static('public'));
 
-const productRoutes = require('./routes/product')
-app.use('/product', productRoutes)
+const productRoutes = require('./routes/product');
+const userRoutes = require('./routes/user');
+
+//middleware
+const fetchUser = require('./middleware/fetchUser')
+app.use('/product',fetchUser,  productRoutes)
+app.use('/user', userRoutes);
 
 module.exports = app;

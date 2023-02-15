@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const Product = require('../models/Product');
+const User = require('../models/User')
 const { body, validationResult } = require('express-validator');
 const upload = require('../middleware/handleImages');
 
@@ -10,14 +11,14 @@ router.get('/', async (req,res)=>{
         let data = await Product.find().skip((page-1) * 5).limit(5);
         
         res.status(200).json({
-            status: 'Success',
+            status: 'success',
             totalResults,
             result: [...data]
         });
     }
     catch(e){
         res.status(500).json({
-            status: 'Failure',
+            status: 'failure',
             message: e.message
         })
     }
@@ -28,48 +29,65 @@ router.post('/',upload, [
     body('description', "Description shpuld be of min 5 characters").isLength({min: 5}),
     body('count').isNumeric(),
     body('price').isNumeric()
-], (req, res) => {
+], async (req, res) => {
     console.log(req.body)
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({
-            status: 'Failure',
+            status: 'failure',
             message: errors.array()
         })
     }
-    const obj = {
-        name: req.body.name,
-        description: req.body.description,
-        image: req.file.filename,
-        count: req.count,
-        price: req.price
-    }
-    Product.create(obj, (err, item) => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            item.save();
-            res.status(201).json({
-                status: 'Success',
-                message: 'Post created successfully',
-                item
+    try{
+        const user = await User.findOne({"_id": req.user});
+        if(user.role === 'user'){
+            return res.status(401).json({
+                status: 'failure',
+                message: 'Only admins can acess this route'
             })
         }
-    });
+        const obj = {
+            name: req.body.name,
+            description: req.body.description,
+            image: req.file.filename,
+            count: req.count,
+            price: req.price,
+            user: req.user
+        }
+        let product = await Product.create(obj);
+        return res.status(201).json({
+            status: 'success',
+            message: 'product created successfully',
+            product
+        })
+    }catch(e){
+        return res.status(500).json({
+            status: 'failure',
+            message: e.message
+        })
+    }
+    
 });
 
 router.put('/:id', async (req, res)=>{
     console.log(req.body)
     try{
-        let product = await Product.updateOne({'_id' : req.params.id}, {$set : req.body})
+        let user = await User.findOne({"_id": req.user})
+        if(user.role === 'user'){
+            return res.status(401).json({
+                status: 'failure',
+                message: 'Only admins can access this route'
+            })
+        }
+        let product = await Product.findOne({'_id' : req.params.id})
+        product = await Product.updateOne({'_id' : req.params.id}, {$set : req.body})
         return res.status(202).json({
-            status: 'Success',
+            status: 'success',
             result: product
         })
     }catch(e){
         return res.status(500).json({
-            status: 'Failure',
+            status: 'failure',
             message: e.message
         })
     }
@@ -77,15 +95,21 @@ router.put('/:id', async (req, res)=>{
 
 router.delete('/:id', async (req, res)=>{
     try{
-        
+        let user = await User.findOne({"_id": req.user})
+        if(user.role === 'user'){
+            return res.status(401).json({
+                status: 'failure',
+                message: 'Only admins can access this route'
+            })
+        }
         let product = await Product.deleteOne({ "_id": req.params.id})
         return res.status(202).json({
-            status: 'Success',
+            status: 'success',
             result: product
         })
     }catch(e){
         return res.status(500).json({
-            status: 'Failure',
+            status: 'failure',
             message: e.message
         })
     }
