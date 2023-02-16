@@ -13,7 +13,7 @@ const Navbar = ()=>{
                 <h1>Gamer's Arena</h1>
                 <nav className='navbar'>
                     <ul>
-                        <li>Home</li>
+                        <li><Link to={'/'}>Home</Link></li>
                         <li>About</li>
                         <li>Contact us</li>
                     </ul>

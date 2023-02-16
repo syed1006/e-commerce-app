@@ -5,10 +5,15 @@ const { body, validationResult } = require('express-validator');
 const upload = require('../middleware/handleImages');
 
 router.get('/', async (req,res)=>{
-    const {page = 1} = req.query;
+    const {page} = req.query;
     try{
         let totalResults = await Product.find().count()
-        let data = await Product.find().skip((page-1) * 5).limit(5);
+        let data;
+        if(page){
+            data = await Product.find().skip((page-1) * 5).limit(5);
+        }else{
+            data = await Product.find();
+        }
         
         res.status(200).json({
             status: 'success',
